@@ -37,15 +37,38 @@ const startGame = () => {
 const endGame = () => {
   gameActive = false;
   document.removeEventListener("keydown", onKeydown);
+  alert("Game Over");
 };
+const checkGameStatus = () => {
+  if (currStack === 0) {
+    endGame();
+  }
+};
+
 const placeStack = () => {
   const rowToPlace = gameBoard[currRow];
 
-  if (currRow >= 0) {
-    stackIndexes.forEach((index) =>
-      rowToPlace[index].setAttribute("placed", "true")
-    );
-    // debugger;
+  if (currRow === maxRow) {
+    stackIndexes.forEach((index) => {
+      rowToPlace[index].setAttribute("placed", true);
+    });
+  } else if (currRow >= 0) {
+    const rowBelow = gameBoard[currRow + 1];
+    let droppedCount = 0;
+    stackIndexes.forEach((index) => {
+      // Place only if the row below has placed as well
+      // Check how many placed
+      if (rowBelow[index].getAttribute("placed") === "true") {
+        rowToPlace[index].setAttribute("placed", true);
+        rowToPlace[index].setAttribute("hovering", false);
+      } else {
+        rowToPlace[index].setAttribute("hovering", false);
+        droppedCount++;
+      }
+    });
+    // Update the amount in the hover stack depending on how many missed
+    currStack = currStack - droppedCount;
+    checkGameStatus();
   } else {
     endGame();
   }
@@ -58,7 +81,6 @@ const nextStack = () => {
 };
 
 // Using currStack and currRow, start from the first cell and move it back and forth, by incrementing
-
 const moveStack = () => {
   const rowToPlace = gameBoard[currRow];
 
@@ -67,7 +89,7 @@ const moveStack = () => {
 
   stackIndexes = [];
   for (let index = 0; index < currStack; index++) {
-    rowToPlace[index].setAttribute("hovering", "true");
+    rowToPlace[index].setAttribute("hovering", true);
     stackIndexes.push(index);
   }
   // Setup timer to make it move
