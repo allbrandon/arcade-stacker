@@ -8,6 +8,8 @@ let hoverStackRight = true;
 let maxRow;
 let maxCol;
 let gameBoard;
+let moveStackIntId;
+let stackIndexes = [];
 
 // Takes a DOM table
 const extractGameBoard = (table) => {
@@ -20,48 +22,65 @@ const extractGameBoard = (table) => {
 
   return gameBoard;
 };
-
+const onKeydown = (e) => {
+  if (e.repeat) return;
+  if (e.key === " ") {
+    placeStack();
+    nextStack();
+  }
+};
 const startGame = () => {
   gameActive = true;
-  document.addEventListener("keydown", (e) => {
-    if (e.key === " ") {
-      placeStack();
-    }
-  });
+  document.addEventListener("keydown", onKeydown);
   moveStack();
 };
 const endGame = () => {
   gameActive = false;
+  document.removeEventListener("keydown", onKeydown);
 };
 const placeStack = () => {
-  if (currRow > 0) {
-    currRow = currRow - 1;
+  const rowToPlace = gameBoard[currRow];
+
+  if (currRow >= 0) {
+    stackIndexes.forEach((index) =>
+      rowToPlace[index].setAttribute("placed", "true")
+    );
+    // debugger;
   } else {
     endGame();
   }
+};
+const nextStack = () => {
+  clearInterval(moveStackIntId);
+  currRow = currRow - 1;
+  moveStackIntId = null;
+  moveStack();
 };
 
 // Using currStack and currRow, start from the first cell and move it back and forth, by incrementing
 
 const moveStack = () => {
   const rowToPlace = gameBoard[currRow];
-  let stackIndexes = [];
 
   // Place the first stack
+  // Clear Stack indexes
+
+  stackIndexes = [];
   for (let index = 0; index < currStack; index++) {
     rowToPlace[index].setAttribute("hovering", "true");
     stackIndexes.push(index);
   }
   // Setup timer to make it move
-
-  setInterval(() => {
-    clearStack(stackIndexes, rowToPlace);
-    checkHoverDirection(stackIndexes);
-    stackIndexes = newStackIndexes(stackIndexes);
-    updateStack(stackIndexes, rowToPlace);
-  }, 1000);
+  if (!moveStackIntId) {
+    moveStackIntId = setInterval(() => {
+      clearStack(rowToPlace);
+      checkHoverDirection();
+      stackIndexes = newStackIndexes();
+      updateStack(rowToPlace);
+    }, 1000);
+  }
 };
-const checkHoverDirection = (stackIndexes) => {
+const checkHoverDirection = () => {
   // Going left, about to go out of bounds, then reverse it
 
   if (stackIndexes[0] === 0 && !hoverStackRight) {
@@ -70,25 +89,25 @@ const checkHoverDirection = (stackIndexes) => {
     hoverStackRight = !hoverStackRight;
   }
 };
-const newStackIndexes = (oldStackIndexes) => {
-  const newIndex = oldStackIndexes.map((index) => {
-    console.log(hoverStackRight);
-    if (hoverStackRight) {
-      return index + 1;
-    } else {
-      return index - 1;
-    }
+
+const newStackIndexes = () => {
+  let increment = 1;
+  if (!hoverStackRight) {
+    increment = -1;
+  }
+  const newIndex = stackIndexes.map((index) => {
+    return index + increment;
   });
 
   return newIndex;
 };
-const clearStack = (oldStackIndexes, row) => {
-  oldStackIndexes.forEach((index) => {
+const clearStack = (row) => {
+  stackIndexes.forEach((index) => {
     row[index].setAttribute("hovering", false);
   });
 };
-const updateStack = (newStackIndexes, row) => {
-  newStackIndexes.forEach((index) => {
+const updateStack = (row) => {
+  stackIndexes.forEach((index) => {
     row[index].setAttribute("hovering", true);
   });
 };
