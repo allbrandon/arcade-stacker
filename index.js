@@ -17,10 +17,10 @@ const initTable = (tableElem, numCols, numRows) => {
     tableElem.appendChild(initRow(numCols));
   }
 };
-const initGame = () => {
+const initGameBoard = () => {
   console.log("initialising");
   const table = document.getElementById("game-table");
   initTable(table, 7, 15);
 };
 
-window.addEventListener("DOMContentLoaded", initGame);
+window.addEventListener("DOMContentLoaded", initGameBoard);
