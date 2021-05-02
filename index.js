@@ -18,7 +18,6 @@ const initTable = (tableElem, numCols, numRows) => {
   }
 };
 const initGameBoard = () => {
-  console.log("initialising");
   const table = document.getElementById("game-table");
   initTable(table, 7, 15);
 };

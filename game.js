@@ -1,14 +1,16 @@
 const startButton = document.getElementById("start-button");
+const restartButton = document.getElementById("restart-button");
 
 // Setup variables that track the game
-let gameActive = false;
-let currRow = 0;
-let currStack = 3;
-let hoverStackRight = true;
+let gameActive;
+let currRow;
+let currStack;
+let hoverStackRight;
 let maxRow;
 let maxCol;
 let gameBoard;
 let moveStackIntId;
+let speed;
 let stackIndexes = [];
 
 // Takes a DOM table
@@ -19,7 +21,6 @@ const extractGameBoard = (table) => {
     const cols = row.children;
     return [...cols];
   });
-
   return gameBoard;
 };
 const onKeydown = (e) => {
@@ -29,22 +30,49 @@ const onKeydown = (e) => {
     nextStack();
   }
 };
+
 const startGame = () => {
   gameActive = true;
   document.addEventListener("keydown", onKeydown);
+  startButton.style.display = "none";
   moveStack();
 };
-const endGame = () => {
+
+const endGame = (won) => {
   gameActive = false;
+
   document.removeEventListener("keydown", onKeydown);
-  alert("Game Over");
-};
-const checkGameStatus = () => {
-  if (currStack === 0) {
-    endGame();
+  if (won) {
+    alert("Congratulations! You have won!");
+  } else {
+    alert("Game Over");
   }
+
+  resetGame();
+};
+const resetGame = () => {
+  clearInterval(moveStackIntId);
+  gameBoard.forEach((row) =>
+    row.forEach((col) => {
+      col.setAttribute("hovering", false);
+      col.setAttribute("placed", false);
+    })
+  );
+  initGame();
+  startButton.style.display = "inline-block";
 };
 
+const checkGameStatus = () => {
+  if (currStack === 0) {
+    endGame(false);
+  }
+  if (currRow === 0) {
+    endGame(true);
+  }
+};
+const updateSpeed = () => {
+  speed = speed * 0.8;
+};
 const placeStack = () => {
   const rowToPlace = gameBoard[currRow];
 
@@ -70,13 +98,14 @@ const placeStack = () => {
     currStack = currStack - droppedCount;
     checkGameStatus();
   } else {
-    endGame();
+    endGame(false);
   }
 };
 const nextStack = () => {
   clearInterval(moveStackIntId);
   currRow = currRow - 1;
   moveStackIntId = null;
+  updateSpeed();
   moveStack();
 };
 
@@ -99,7 +128,7 @@ const moveStack = () => {
       checkHoverDirection();
       stackIndexes = newStackIndexes();
       updateStack(rowToPlace);
-    }, 1000);
+    }, speed);
   }
 };
 const checkHoverDirection = () => {
@@ -117,11 +146,9 @@ const newStackIndexes = () => {
   if (!hoverStackRight) {
     increment = -1;
   }
-  const newIndex = stackIndexes.map((index) => {
+  return stackIndexes.map((index) => {
     return index + increment;
   });
-
-  return newIndex;
 };
 const clearStack = (row) => {
   stackIndexes.forEach((index) => {
@@ -135,12 +162,22 @@ const updateStack = (row) => {
 };
 
 const initGame = () => {
-  startButton.addEventListener("click", startGame);
-  gameBoard = extractGameBoard(document.getElementById("game-table"));
   maxCol = gameBoard[0].length - 1;
   maxRow = gameBoard.length - 1;
-  // start at the max due to 2D array
+  gameActive = false;
   currRow = maxRow;
+  currStack = 3;
+  hoverStackRight = true;
+  moveStackIntId = null;
+  speed = 1000;
+  stackIndexes = [];
+
+  // start at the max due to 2D array
 };
 
-window.addEventListener("DOMContentLoaded", initGame);
+window.addEventListener("DOMContentLoaded", () => {
+  startButton.addEventListener("click", startGame);
+  restartButton.addEventListener("click", resetGame);
+  gameBoard = extractGameBoard(document.getElementById("game-table"));
+  initGame();
+});
