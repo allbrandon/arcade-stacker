@@ -1,0 +1,27 @@
+body {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.game-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+#game-table .cell {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #bdbdbd;
+}
+#game-table {
+  margin-bottom: 12px;
+}
+header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* .game-container .game-controls {
+  
+} */
